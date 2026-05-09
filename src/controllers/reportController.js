@@ -5,22 +5,27 @@ import {
     updateReportStatus,
     getReportStats, 
     getReportsByUserId,
+    deleteReportById,
 } from "../models/reportModels.js";
 
 export const getReports = async (req, res) => {
     try {
-        const reports = await getAllReports();
-        return res.status(201).json({
-            message: 'data laporan berhasil diambil',
+        const { status, category_id, search, page = 1, limit = 10} = req.query;
+        const offset = (page - 1) * limit;
+        const filters = { status, category_id, search, limit, offset};
+        const reports = await getAllReports(filters);
+        
+        return res.status(200).json({
+            message: 'berhasil ambil laporan',
             success: true,
             data: reports
         })
     } catch (error) {
         console.error(error);
         return res.status(500).json({
-            message: "internal server error",
+            message: 'Internal Server Error',
             success: false
-        })
+        });
     }
 };
 
@@ -156,3 +161,46 @@ export const getDashboardStats = async (req, res) => {
     }
 };
 
+export const removeReport = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    try {
+        const report = await getReportById(id);
+        if (!report) {
+            return res.status(400).json({
+                message: 'laporan tidak ditemukan',
+                success: false
+            })
+        };
+        
+        if (userRole === 'user') {
+            if (report.user_id !== userId) {
+                return res.status(403).json({
+                    message: 'akses ditolak, laporan bukan milikmu',
+                    success: false
+                })
+            };
+            if (report.status !== 'pending') {
+                return res.status(400).json({
+                  message: 'laporan sedang dalam proses, tidak dapat dihapus',
+                  success: false
+                })
+            };
+        };
+
+        await deleteReportById(id);
+        return res.status(200).json({
+            message: 'laporan berhasil dihapus',
+            success: true
+        })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'internal server error',
+            success: false
+        });
+    }
+};

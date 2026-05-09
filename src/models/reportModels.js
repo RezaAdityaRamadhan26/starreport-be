@@ -1,26 +1,5 @@
 import db from "../config/db.js";
 
-export const getAllReports = async () => {
-    const query = `
-        SELECT 
-            pr.id,
-            pr.header,
-            pr.body,
-            u.username AS author_name,
-            c.category_name,
-            pr.image,
-            pr.status,
-            pr.created_at,
-            GetTotalComments(pr.id) AS total_comments
-        FROM public_reports pr
-        JOIN users u ON pr.user_id = u.id
-        JOIN categories c ON pr.category_id = c.id
-        ORDER BY pr.created_at DESC
-    `;
-    const [rows] = await db.query(query);
-    return rows;
-};
-
 export const createReport = async (header, body, userId, categoryId, imagePath) => {
     const query = `
         INSERT INTO public_reports (header, body, user_id, category_id, image) 
@@ -33,7 +12,7 @@ export const createReport = async (header, body, userId, categoryId, imagePath) 
 export const getReportById = async (id) => {
     const query = `
         SELECT 
-            pr.id, pr.header, pr.body, u.username AS author_name, 
+            pr.id, pr.header, pr.body, pr.user_id, u.username AS author_name, 
             c.category_name, pr.image, pr.status, pr.created_at
         FROM public_reports pr
         JOIN users u ON pr.user_id = u.id
@@ -72,4 +51,47 @@ export const getReportStats = async () => {
     `;
     const [rows] = await db.query(query);
     return rows;
+};
+
+export const getAllReports = async (filters = {}) => {
+    let query = `
+        SELECT 
+            pr.id, pr.header, pr.body, u.username AS author_name, 
+            c.category_name, pr.image, pr.status, pr.created_at,
+            GetTotalComments(pr.id) AS total_comments
+        FROM public_reports pr
+        JOIN users u ON pr.user_id = u.id
+        JOIN categories c ON pr.category_id = c.id
+        WHERE 1=1 
+    `;
+    const params = [];
+
+    if (filters.status) {
+        query += ` AND pr.status = ?`;
+        params.push(filters.status);
+    }
+    if (filters.category_id) {
+        query += ` AND pr.category_id = ?`;
+        params.push(filters.category_id);
+    }
+    if (filters.search) {
+        query += ` AND (pr.header LIKE ? OR pr.body LIKE ?)`;
+        params.push(`%${filters.search}%`, `%${filters.search}%`);
+    }
+
+    query += ` ORDER BY pr.created_at DESC`;
+
+    if (filters.limit && filters.offset !== undefined) {
+        query += ` LIMIT ? OFFSET ?`;
+        params.push(Number(filters.limit), Number(filters.offset));
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows;
+};
+
+export const deleteReportById = async (id) => {
+    const query = `DELETE FROM public_reports WHERE id = ?`;
+    const [result] = await db.query(query, [id]);
+    return result.affectedRows;
 };
