@@ -36,3 +36,15 @@ export const deleteUserById = async (id) => {
     const [result] = await db.query(query, [id]);
     return result.affectedRows;
 };
+
+export const getUserPasswordById = async (id) => {
+    const query = `SELECT password FROM users WHERE id = ?`;
+    const [rows] = await db.query(query, [id]);
+    return rows[0];
+};
+
+export const updateUserPassword = async (id, newHashedPassword) => {
+const query = `UPDATE users SET password = ? WHERE id = ?`;
+    const [result] = await db.query(query, [newHashedPassword, id]);
+    return result.affectedRows
+};

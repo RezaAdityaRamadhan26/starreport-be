@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { findUserByUsername, createUser } from "../models/userModels.js";
+import { findUserByUsername, createUser, getUserPasswordById, updateUserPassword } from "../models/userModels.js";
 
 export const register = async (req, res) => {
     const { username, password, role } = req.body;
@@ -89,5 +89,45 @@ export const login = async (req, res) => {
             success: false
         })
     }
-}
+};
+
+export const changePassword = async (req, res) => {
+    const userId = req.user.id; 
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({
+            message: 'password lama dan baru wajib diisi', 
+            success: false 
+        });
+    }
+
+    try {
+        const user = await getUserPasswordById(userId);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isMatch) {
+            return res.status(400).json({
+                message: 'password lama salah', 
+                success: false 
+            });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+        await updateUserPassword(userId, hashedNewPassword);
+
+        return res.status(200).json({
+            message: 'password berhasil diubah', 
+            success: true 
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "internal server error", 
+            success: false 
+        });
+    }
+};
 
