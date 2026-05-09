@@ -49,3 +49,27 @@ export const updateReportStatus = async (id, status) => {
     const [result] = await db.query(query, [status, id]);
     return result.affectedRows; 
 };
+
+export const getReportsByUserId = async (userId) => {
+    const query = `
+        SELECT 
+            pr.id, pr.header, pr.body, c.category_name, 
+            pr.image, pr.status, pr.created_at
+        FROM public_reports pr
+        JOIN categories c ON pr.category_id = c.id
+        WHERE pr.user_id = ?
+        ORDER BY pr.created_at DESC
+    `;
+    const [rows] = await db.query(query, [userId]);
+    return rows;
+};
+
+export const getReportStats = async () => {
+        const query = `
+        SELECT status, COUNT(*) as total
+        FROM public_reports
+        GROUP BY status
+    `;
+    const [rows] = await db.query(query);
+    return rows;
+};

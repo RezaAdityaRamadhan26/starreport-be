@@ -5,6 +5,7 @@ import authRoute from './src/routes/authRoutes.js';
 import reportRoute from './src/routes/reportRoutes.js';
 import commentRoute from './src/routes/commentRoutes.js';
 import userRoute from './src/routes/userRoutes.js';
+import categoryRoute from './src/routes/categoriesRoutes.js';
 
 const app = express();
 const port = 8000;
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/reports', reportRoute);
 app.use('/api/comments', commentRoute);
 app.use('/api/users', userRoute);
+app.use('/api/categories', categoryRoute);
 
 app.listen(port, () => {
     console.log(`Server berjalan di port ${port}`);

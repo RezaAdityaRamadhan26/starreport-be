@@ -2,7 +2,9 @@ import {
     createReport, 
     getAllReports, 
     getReportById, 
-    updateReportStatus 
+    updateReportStatus,
+    getReportStats, 
+    getReportsByUserId,
 } from "../models/reportModels.js";
 
 export const getReports = async (req, res) => {
@@ -114,3 +116,43 @@ export const changeStatus = async (req, res) => {
         });
     }
 };
+
+export const getMyReports = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const reports = await getReportsByUserId(userId);
+        
+        return res.status(200).json({
+            message: 'berhasil ambil laporan',
+            success: true,
+            data: reports
+        });
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'internal server error',
+            success: false
+        });
+    }
+};
+
+export const getDashboardStats = async (req, res) => {
+    try {
+        const stats = await getReportStats();
+
+        return res.status(200).json({
+            message: 'statistik laporan berhasil diambil',
+            success: true,
+            data: stats
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'internal server error',
+            success: false
+        });
+    }
+};
+
