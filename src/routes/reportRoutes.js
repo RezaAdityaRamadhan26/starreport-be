@@ -1,0 +1,17 @@
+import express from 'express';
+import { verifyToken } from '../middlewares/authMiddlewares.js';
+import { upload } from '../middlewares/uploadMiddlewares.js';
+import { getReports, addReports, getDetailReport, changeStatus } from '../controllers/reportController.js';
+import { checkRole } from '../middlewares/roleMiddlewares.js';
+
+const reportRoute = express.Router();
+
+reportRoute.use(verifyToken);
+
+reportRoute.get('/', getReports);
+reportRoute.get('/:id', getDetailReport);
+reportRoute.post('/', upload.single('image'), addReports);
+
+reportRoute.put('/:id/status', checkRole('admin', 'super_admin'), changeStatus);
+
+export default reportRoute;
