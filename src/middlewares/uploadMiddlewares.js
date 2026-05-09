@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
     if (extname && mimetype) {
         cb(null, true);
     } else {
-        cb(new Error('Hanya diper   bolehkan mengunggah file gambar (JPG, PNG, WEBP)!'), false);
+        cb(new Error('Hanya diperbolehkan mengunggah file gambar (JPG, PNG, WEBP)!'), false);
     }
 };
 

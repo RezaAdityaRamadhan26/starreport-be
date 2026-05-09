@@ -28,7 +28,7 @@ export const getUserById = async (id) => {
 export const updateUserRole = async (id, role) => {
     const query = `UPDATE users SET role = ? WHERE id = ?`;
     const [result] = await db.query(query, [role, id]);
-    return result.affectedRows > 0;
+    return result.affectedRows;
 };
 
 export const deleteUserById = async (id) => {

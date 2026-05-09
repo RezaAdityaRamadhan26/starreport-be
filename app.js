@@ -1,28 +1,25 @@
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config';
 
 import authRoute from './src/routes/authRoutes.js';
 import reportRoute from './src/routes/reportRoutes.js';
 import commentRoute from './src/routes/commentRoutes.js';
+import userRoute from './src/routes/userRoutes.js';
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = 8000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
-
 app.use('/uploads', express.static('uploads'));
 
+// Daftarkan Routes
 app.use('/api/auth', authRoute);
 app.use('/api/reports', reportRoute);
 app.use('/api/comments', commentRoute);
-
-app.get('/', (req, res) => {
-    res.send('api berjalan');
-});
+app.use('/api/users', userRoute);
 
 app.listen(port, () => {
-    console.log(`Server is Running in Port ${port}`);
+    console.log(`Server berjalan di port ${port}`);
 });
