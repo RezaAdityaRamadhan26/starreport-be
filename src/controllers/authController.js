@@ -151,6 +151,9 @@ export const forgotPassword = async (req, res) => {
         };
 
         const secret = process.env.JWT_SECRET + user.password;
+        
+        const token = jwt.sign({ id: user.id, username: user.username }, secret, { expiresIn: '15m' });
+
         const link = `http://localhost:3000/reset-password/${user.id}/${token}`;
 
         return res.status(200).json({
@@ -198,6 +201,7 @@ export const resetPassword = async (req, res) => {
         try {
             jwt.verify(token, secret);
         } catch (error) {
+            console.log("ALASAN TOKEN GAGAL:", error.message);
             return res.status(400).json({
                 message: 'token tidak valid atau kedaluwarsa',
                 success: false
